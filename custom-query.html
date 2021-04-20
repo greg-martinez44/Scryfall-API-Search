@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="eng">
+    <head>
+        <meta charset="utf-8">
+        <title>Custom Query</title>
+        <link rel="stylesheet" href="./styles/main.css">
+    </head>
+    <body>
+        <header>
+            <h1>Custom Queries:</h1>
+            <p>Write a custom query to call Scryfall's API</p>
+        </header>
+        <form name="input-form">
+            <label name="query">Query:</label>
+            <textarea id="query", rows="10"></textarea>
+            <button type="button" onclick="printApiResults();">Call API</button>
+        </form>
+        <pre id="results"></pre>
+        <script src="./scripts/main.js"></script>
+    </body>
+</html>

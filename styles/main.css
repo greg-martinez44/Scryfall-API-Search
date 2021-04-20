@@ -1,0 +1,56 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    margin-left: 20px;
+}
+
+form {
+    display: grid;
+    grid-template-columns: 300px 300px;
+    grid-template-rows: 30px 30px 30px 30px 30px;
+    margin-left: 50px;
+}
+
+form label, form select, form input{
+    grid-column: 1 / span 2;
+}
+
+form textarea#query {
+    height: 80px;
+}
+
+form button {
+    grid-row: 5;
+    margin-top: 10px;
+}
+
+div.cardResults {
+    display: grid;
+    grid-template-columns: 300px 100px 500px;
+    grid-template-rows: 50px 50px 500px;
+    margin-left: 75px;
+}
+
+.cardName {
+    grid-column: 3;
+    grid-row: 1
+}
+.cardText {
+    grid-column: 3;
+    grid-row: 3;
+    word-break: normal;
+    white-space: normal;
+}
+
+.cardColor {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.cardImage {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+}

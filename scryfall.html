@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="eng">
+    <head>
+        <meta charset="utf-8">
+        <title>Scryfall Test</title>
+        <link rel="stylesheet" href="./styles/main.css">
+    </head>
+    <body>
+        <header>
+            <h1>Scryfall Queries:</h1>
+            <p>Fill out the fields to call Scryfall's API</p>
+            <p><a href="./custom-query.html">Or try the custom query option</a></p>
+        </header>
+        <form name="input-form">
+            <label name="key">Key:</label>
+            <select id="key">
+                <option selected>set</option>
+                <option>name</option>
+                <option>cmc</option>
+            </select>
+            <label name="value">Value:</label>
+            <input type="text" id="value">
+            <button type="button" onclick="printApiResults();">Call API</button>
+        </form>
+        <pre id="results"></pre>
+        <script src="./scripts/main.js"></script>
+    </body>
+</html>

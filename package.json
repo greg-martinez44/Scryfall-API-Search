@@ -1,0 +1,18 @@
+{
+  "name": "webdata",
+  "version": "1.0.0",
+  "description": "Practice for writing JavaScript API connectors",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "GM",
+  "license": "ISC",
+  "devDependencies": {
+    "chia": "^0.0.1",
+    "mocha": "^8.3.2"
+  },
+  "dependencies": {
+    "chai": "^4.3.4"
+  }
+}
