@@ -14,3 +14,4 @@
 **/build
 **/dist
 **/pylint_logs
+**/node_modules
