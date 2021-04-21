@@ -34,28 +34,35 @@ async function callAPI(pageNumber=1, retrievedObj=null)
 
 function parseQuery(rawQuery)
 {
-    const queryTokens = rawQuery.toLowerCase().split(" ");
-    if (!queryTokens.some((token) => token === "where")) throw new SyntaxError("Query must have where clause");
+    const queryTokens = rawQuery.toLowerCase();
+    if (!queryTokens.includes("where")) throw new SyntaxError("Query must have where clause");
 
     const selectIndex = queryTokens.indexOf("select");
     const fromIndex = queryTokens.indexOf("from");
     const whereIndex = queryTokens.indexOf("where");
 
-    let columns = queryTokens
-        .slice(selectIndex+1, fromIndex)
-        .map((item) => item.replace(/,/g, ""))
-        .filter((item) => item !== "")
-
-    let rawValues = queryTokens.slice(whereIndex+1).join(" ");
-    rawValues = rawValues.replace(/, /g, "-");
-    let values = rawValues.split(" ");
-    values = values.map((item) => item.replace(/-/g, ", "));
-
     const queryParams = {
-        columns: columns,
-        values: values,
-        tables: queryTokens.slice(fromIndex+1, whereIndex)
+        columns: [selectIndex + "select".length, fromIndex, /,/g, ""],
+        tables: [fromIndex + "from".length, whereIndex, null, null],
+        values: [whereIndex + "where".length, queryTokens.length, /, /g, "-"]
     };
+
+    for (const clause in queryParams)
+    {
+        let startIndex = queryParams[clause][0];
+        let endIndex = queryParams[clause][1];
+        let pattern = queryParams[clause][2] || "";
+        let replaceWith = queryParams[clause][3] || "";
+
+        queryParams[clause] = queryTokens
+            .slice(startIndex, endIndex)
+            .replace(pattern, replaceWith)
+            .trim()
+            .split(" ");
+    }
+
+    queryParams.values = queryParams.values.map((item) => item.replace(/-/g, ", "));
+
     return queryParams;
 }
 
