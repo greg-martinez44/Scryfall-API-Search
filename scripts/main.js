@@ -7,7 +7,9 @@ async function printApiResults()
         outputArea.innerHTML = formatResults(results);
     } else 
     {
-        outputArea.innerHTML = "<p><span style='color: red'>No results!</span></p>";
+        outputArea.innerHTML = (
+            "<p><span style='color: red'>No results!</span></p>"
+        );
     }
 }
 async function callAPI(pageNumber=1, retrievedObj=null)
@@ -35,7 +37,10 @@ async function callAPI(pageNumber=1, retrievedObj=null)
 function parseQuery(rawQuery)
 {
     const queryTokens = rawQuery.toLowerCase();
-    if (!queryTokens.includes("where")) throw new SyntaxError("Query must have where clause");
+    if (!queryTokens.includes("where"))
+    {
+        throw new SyntaxError("Query must have where clause");
+    }
 
     const selectIndex = queryTokens.indexOf("select");
     const fromIndex = queryTokens.indexOf("from");
@@ -61,9 +66,47 @@ function parseQuery(rawQuery)
             .split(" ");
     }
 
-    queryParams.values = queryParams.values.map((item) => item.replace(/-/g, ", "));
-
+    queryParams.values = queryParams.values.map(
+        (item) => item.replace(/-/g, ", ")
+    );
+    queryParams.values = parseValues(queryParams.values)
     return queryParams;
+}
+
+function valuesNeedSpacing(value)
+{
+    return (value.endsWith("=") || value.startsWith("=")) && value.length > 1;
+}
+
+function parseValues(values) {
+    //TODO: Needs to recursively check conditions at front and after and...
+    // I'm not sure if this is something that the parser should know or
+    // something the url maker should worry about...
+    if (values.some(valuesNeedSpacing))
+    {
+        const equalsIndex = values.findIndex(valuesNeedSpacing)
+        const beforeEquals = values.slice(
+            null,
+            (equalsIndex > 0) ? equalsIndex : 1
+        );
+        const afterEquals = values.slice((equalsIndex > 0) ? equalsIndex : 1);
+        if (beforeEquals.length === 1 && beforeEquals[0].includes("="))
+        {
+            beforeEquals[0] = beforeEquals[0].replace("=", "");
+        } else if (beforeEquals[beforeEquals.length-1].includes("="))
+        {
+            beforeEquals[beforeEquals.length-1] = (
+                beforeEquals[beforeEquals.length-1]
+                    .replace("=", "")
+            );
+        } else
+        {
+            afterEquals[0] = afterEquals[0].replace("=", "");
+        }
+        afterEquals.unshift("=");
+        values = beforeEquals.concat(afterEquals);
+    }
+    return values
 }
 
 function formatURL(values, tables, pageNumber)
@@ -86,7 +129,10 @@ function formatURL(values, tables, pageNumber)
         }
         values = values.slice(nextAnd+1);
     }
-    return `https://api.scryfall.com/${urlTable}/search?order=set&q=${urlQueryString}&page=${pageNumber}`;
+    return (
+        `https://api.scryfall.com/${urlTable}/search?`
+        + `order=set&q=${urlQueryString}&page=${pageNumber}`
+    );
 }
 
 

@@ -43,10 +43,43 @@ describe("QueryBox", () => {
         });
         it("maintains commas in WHERE clause only", () => {
             const query = "select x, y, z from a where n = \"m, bbb\"";
-            const expected = ["n", "=", "\"m, bbb\""];
+            const expectedValues = ["n", "=", "\"m, bbb\""];
+            const expectedColumns = ["x", "y", "z"]
 
             const {columns, values, tables} = parseQuery(query);
 
+            assert.deepEqual(values, expectedValues);
+            assert.deepEqual(columns, expectedColumns)
+        });
+        it("correctly interprets query when no spacing on left of '='", () => {
+            const query = "select x, y, z from a where n= m";
+            const expected = ["n", "=", "m"];
+
+            const {columns, values, tables} = parseQuery(query);
+
+            assert.deepEqual(values, expected);
+        });
+        it("correctly interprets query when no spacing on the right of '='", () => {
+            const query = "select x, y, z from a where n =m";
+            const expected = ["n", "=", "m"];
+
+            const {columns, values, tables} = parseQuery(query);
+            assert.deepEqual(values, expected);
+        });
+        it("correctly interprets query when no spacing on either side of '='", () => {
+
+        });
+        it("works with multiple conditions", () => {
+            const query = "select x, y, z from u where a = n and b = c";
+            const expected = ["a", "=", "n", "and", "b", "=", "c"];
+
+            const {columns, values, tables} = parseQuery(query);
+            assert.deepEqual(values, expected);
+        });
+        it("correctly interprets multiple conditions when there are no spaces around second '='", () => {
+            const query = "select x, y from z where a = b and c= d";
+            const expected = ["a", "=", "b", "and", "c", "=", "d"];
+            const {columns, values, tables} = parseQuery(query);
             assert.deepEqual(values, expected);
         });
     });
