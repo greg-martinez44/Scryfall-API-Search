@@ -75,38 +75,56 @@ function parseQuery(rawQuery)
 
 function valuesNeedSpacing(value)
 {
-    return (value.endsWith("=") || value.startsWith("=")) && value.length > 1;
+    const pattern = /[!<>]?=|[<>]/g
+    return (value.match(pattern)) && value.length > 1;
 }
 
 function parseValues(values) {
-    //TODO: Needs to recursively check conditions at front and after and...
-    // I'm not sure if this is something that the parser should know or
-    // something the url maker should worry about...
-    if (values.some(valuesNeedSpacing))
-    {
-        const equalsIndex = values.findIndex(valuesNeedSpacing)
-        const beforeEquals = values.slice(
-            null,
-            (equalsIndex > 0) ? equalsIndex : 1
-        );
-        const afterEquals = values.slice((equalsIndex > 0) ? equalsIndex : 1);
-        if (beforeEquals.length === 1 && beforeEquals[0].includes("="))
+    const result = [];
+    let nextElement;
+    do {
+        nextElement = null;
+        if (values.some((value) => value === "and"))
         {
-            beforeEquals[0] = beforeEquals[0].replace("=", "");
-        } else if (beforeEquals[beforeEquals.length-1].includes("="))
-        {
-            beforeEquals[beforeEquals.length-1] = (
-                beforeEquals[beforeEquals.length-1]
-                    .replace("=", "")
-            );
-        } else
-        {
-            afterEquals[0] = afterEquals[0].replace("=", "");
+            let nextAnd = values.indexOf("and");
+            nextElement = values.slice(nextAnd + 1);
+            values = values.slice(0, nextAnd);
         }
-        afterEquals.unshift("=");
-        values = beforeEquals.concat(afterEquals);
-    }
-    return values
+        if (values.some(valuesNeedSpacing))
+        {
+            const equalityIndex = values.findIndex(valuesNeedSpacing);
+            const equalitySymbol = values[equalityIndex]
+                .match(/[!<>]?=|[<>]/g)[0];
+            const beforeEquals = values.slice(
+                null,
+                (equalityIndex > 0) ? equalityIndex : 1
+            );
+            const afterEquals = values.slice(
+                (equalityIndex > 0) ? equalityIndex : 1
+            );
+            if (
+                beforeEquals.length === 1
+                && beforeEquals[0].includes(equalitySymbol)
+            )
+            {
+                beforeEquals[0] = beforeEquals[0].replace(equalitySymbol, "");
+            } else if (beforeEquals[beforeEquals.length-1].includes(equalitySymbol))
+            {
+                beforeEquals[beforeEquals.length-1] = (
+                    beforeEquals[beforeEquals.length-1]
+                        .replace(equalitySymbol, "")
+                );
+            } else
+            {
+                afterEquals[0] = afterEquals[0].replace(equalitySymbol, "");
+            }
+            afterEquals.unshift(equalitySymbol);
+            values = beforeEquals.concat(afterEquals);
+        }
+        result.push(values);
+        values = nextElement;
+    } while (nextElement);
+    return result;
 }
 
 function formatURL(values, tables, pageNumber)
