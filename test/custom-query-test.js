@@ -1,5 +1,8 @@
 const {assert} = require("chai");
-const {parseQuery} = require("../scripts/main.js");
+const {parseQuery, formatURL} = require("../scripts/main.js");
+
+// `https://api.scryfall.com/${urlTable}/search?`
+// + `order=set&q=${urlQueryString}&page=${pageNumber}`
 
 describe("QueryBox", () => {
     describe("parseQuery", () => {
@@ -92,6 +95,71 @@ describe("QueryBox", () => {
             const expected = [["a", "=", "b"], ["c", "=", "d"]];
             const {columns, values, tables} = parseQuery(query);
             assert.deepEqual(values, expected);
+        });
+        it("works with '<' operator", () => {
+            const query = "select x, y from b where a < b";
+            const expected = [["a", "<", "b"]];
+
+            const {columns, values, tables} = parseQuery(query);
+            assert.deepEqual(values, expected);
+        });
+        it("works with '>=' operator", () => {
+            const query = "select x, y from b where a >= d";
+            const expected = [["a", ">=", "d"]];
+
+            const {columns, values, tables} = parseQuery(query);
+            assert.deepEqual(values, expected);
+        })
+        it("works with '>' and no space", () => {
+            const query = "select x, y from b where a >d";
+            const expected = [["a", ">", "d"]];
+
+            const {columns, values, tables} = parseQuery(query);
+            assert.deepEqual(values, expected);
+        })
+    });
+    describe("formatURL", () => {
+        it("fills in the table from tables item", () => {
+            const values = [["x", "=", "c"]];
+            const tables = ["cards"];
+            const expectedStart = `https://api.scryfall.com/cards/search?`;
+            const actual = formatURL(values, tables);
+
+            assert.ok(actual.startsWith(expectedStart));
+        });
+        it("fills in values with one entry", () => {
+            const values = [["x", "=", "c"]];
+            const tables = ["cards"];
+            const pageNumber = 1;
+            const expected = (
+                `https://api.scryfall.com/cards/search?`
+                + `order=set&q=x%3Dc&page=1`
+            );
+            const actual = formatURL(values, tables, pageNumber);
+
+            assert.equal(actual, expected);
+        });
+        it("fills in values with one entry ('<')", () => {
+            const values = [["x", "<", "c"]];
+            const tables = ["cards"];
+            const pageNumber = 1;
+            const expected = (
+                `https://api.scryfall.com/cards/search?`
+                + `order=set&q=x%3Cc&page=1`
+            );
+            const actual = formatURL(values, tables, pageNumber);
+            assert.equal(actual, expected);
+        });
+        it("fills in values with two entries", () => {
+            const values = [["x", "=", "c"], ["b","=", "d"]];
+            const tables = ["cards"];
+            const pageNumber = 1;
+            const expected = (
+                `https://api.scryfall.com/cards/search?`
+                + `order=set&q=x%3Dc+b%3Dd&page=1`
+            );
+            const actual = formatURL(values, tables, pageNumber);
+            assert.equal(actual, expected);
         });
     });
 });

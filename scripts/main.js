@@ -17,6 +17,7 @@ async function callAPI(pageNumber=1, retrievedObj=null)
     const rawQuery = document.getElementById("query").value;
     const {columns, values, tables} = parseQuery(rawQuery);
     const url = formatURL(values, tables, pageNumber);
+    console.log(url);
 
     if (!retrievedObj) retrievedObj = [];
 
@@ -76,7 +77,7 @@ function parseQuery(rawQuery)
 function valuesNeedSpacing(value)
 {
     const pattern = /[!<>]?=|[<>]/g
-    return (value.match(pattern)) && value.length > 1;
+    return (value.match(pattern)) && value.length > 1 && !(value === "<=" || value === ">=");
 }
 
 function parseValues(values) {
@@ -108,7 +109,9 @@ function parseValues(values) {
             )
             {
                 beforeEquals[0] = beforeEquals[0].replace(equalitySymbol, "");
-            } else if (beforeEquals[beforeEquals.length-1].includes(equalitySymbol))
+            } else if (
+                beforeEquals[beforeEquals.length-1].includes(equalitySymbol)
+            )
             {
                 beforeEquals[beforeEquals.length-1] = (
                     beforeEquals[beforeEquals.length-1]
@@ -129,30 +132,26 @@ function parseValues(values) {
 
 function formatURL(values, tables, pageNumber)
 {
-    const urlTable = tables[0];
-    let urlQueryString = "";
-    while (values.length > 0) {
-
-        let nextEqualSign = values.indexOf("=");
-        urlQueryString += `${values[nextEqualSign-1]}%3A`
-
-        let nextAnd = findNextAnd(values);
-        let currentValues = values.slice(nextEqualSign+1, nextAnd);
-        if (parseInt(currentValues))
-        {
-            urlQueryString += `${parseInt(currentValues.join(" "))}`;
-        } else
-        {
-            urlQueryString += `'${currentValues.join(" ")}'`;
-        }
-        values = values.slice(nextAnd+1);
+    const unicodeSymbols = {
+        "=": "%3D",
+        "<": "%3C",
+        "<=": "%3C%3D",
+        ">": "%3E",
+        ">=": "%3E%3D",
+        "!=": "%21%3D"
+    };
+    let result = "";
+    for (let i = 0; i < values.length; i++)
+    {
+        if (i > 0) result += "+";
+        values[i][1] = unicodeSymbols[values[i][1]];
+        result += values[i].join("");
     }
     return (
-        `https://api.scryfall.com/${urlTable}/search?`
-        + `order=set&q=${urlQueryString}&page=${pageNumber}`
+        `https://api.scryfall.com/${tables[0]}/search?`
+        + `order=set&q=${result}&page=${pageNumber}`
     );
 }
-
 
 function formatResults(results)
 {
@@ -162,7 +161,7 @@ function formatResults(results)
         const {name, image, oracleText, color} = resultAttributes(result);
 
         const imageHTML = (
-            `<img class="cardImage" src=${image.small} alt=${name}\
+            `<img class="cardImage" src=${image.normal} alt=${name}\
             width="300px" height="400px">`
         );
         const detailsHTML = 
@@ -184,15 +183,9 @@ function resultAttributes(result)
     };
 }
 
-function findNextAnd(values)
-{
-    const nextAnd = values.indexOf("and");
-    if (nextAnd === -1) return values.length;
-    return nextAnd;
-}
-
 try {
     module.exports.parseQuery = parseQuery;
+    module.exports.formatURL = formatURL;
 } catch (ReferenceError) {
 
 }
