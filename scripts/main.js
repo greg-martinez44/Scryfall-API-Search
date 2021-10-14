@@ -50,7 +50,7 @@ function parseQuery(rawQuery)
     const queryParams = {
         columns: [selectIndex + "select".length, fromIndex, /,/g, ""],
         tables: [fromIndex + "from".length, whereIndex, null, null],
-        values: [whereIndex + "where".length, queryTokens.length, /, /g, "-"]
+        values: [whereIndex + "where".length, queryTokens.length, /, /g, "---"]
     };
 
     for (const clause in queryParams)
@@ -68,7 +68,7 @@ function parseQuery(rawQuery)
     }
 
     queryParams.values = queryParams.values.map(
-        (item) => item.replace(/-/g, ", ")
+        (item) => item.replace(/---/g, ", ")
     );
     queryParams.values = parseValues(queryParams.values)
     return queryParams;
