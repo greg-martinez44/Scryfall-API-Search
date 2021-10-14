@@ -14,7 +14,14 @@ async function printApiResults()
 }
 async function callAPI(pageNumber=1, retrievedObj=null)
 {
-    const rawQuery = document.getElementById("query").value;
+    let rawQuery;
+    try {
+        rawQuery = document.getElementById("query").value;
+    } catch(err) {
+        let scryfallQueryKey = document.getElementById("key").value;
+        let scryfallQueryValue = document.getElementById("value").value;
+        rawQuery = `select * from cards where ${scryfallQueryKey} = ${scryfallQueryValue}`;
+    }
     const {columns, values, tables} = parseQuery(rawQuery);
     const url = formatURL(values, tables, pageNumber);
     console.log(url);
